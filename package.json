@@ -1,0 +1,18 @@
+{
+  "name": "dynamic-code-prime",
+  "version": "1.0.0",
+  "description": "AgentPrime Mini — Natural language to code via dynamic AI prompts. Part of the AgentPrime family.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "author": "DynamicCodePrime",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}

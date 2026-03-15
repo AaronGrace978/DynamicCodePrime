@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self'; img-src 'self' data:;">
+  <title>DynamicCodePrime</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+
+  <!-- ═══ Custom Title Bar ═══ -->
+  <header id="titlebar">
+    <div class="titlebar-drag">
+      <div class="titlebar-logo">
+        <div class="logo-icon">
+          <span class="logo-bracket">&lt;</span><span class="logo-slash">/</span><span class="logo-bracket">&gt;</span>
+        </div>
+        <span class="titlebar-title">Dynamic<span class="accent">Code</span>Prime <span class="titlebar-mini">· AgentPrime Mini</span></span>
+      </div>
+    </div>
+    <div class="titlebar-center">
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting...</span>
+      </div>
+    </div>
+    <div class="titlebar-controls">
+      <button class="tb-btn" id="btnMinimize" title="Minimize">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="2" fill="currentColor"/></svg>
+      </button>
+      <button class="tb-btn" id="btnMaximize" title="Maximize">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      </button>
+      <button class="tb-btn tb-close" id="btnClose" title="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section id="workspaceSwitcher">
+    <button class="workspace-tab active" id="tabBuilder" type="button">Staged Builder</button>
+    <button class="workspace-tab" id="tabCodeTool" type="button">Code Tool</button>
+  </section>
+
+  <main id="builderApp">
+    <section class="builder-column">
+      <div class="panel-header">
+        <h2 class="panel-title">Target and Intent</h2>
+      </div>
+      <div class="builder-content">
+        <label class="builder-label" for="builderResumeSession">Resume saved session</label>
+        <div class="builder-row">
+          <select id="builderResumeSession" class="builder-select">
+            <option value="">No saved sessions</option>
+          </select>
+          <button id="builderLoadSession" class="btn-settings" type="button">Load</button>
+        </div>
+
+        <label class="builder-label" for="builderTargetPath">Target folder or drive</label>
+        <div class="builder-row">
+          <input id="builderTargetPath" class="builder-input" type="text" placeholder="e.g. G:\Projects\my-app">
+          <button id="builderPickFolder" class="btn-settings" type="button">Browse</button>
+        </div>
+
+        <label class="builder-label" for="builderIntent">Build intent</label>
+        <textarea id="builderIntent" class="builder-textarea" placeholder="Describe what should be built in stages..."></textarea>
+
+        <label class="builder-label" for="builderMode">Target mode</label>
+        <select id="builderMode" class="builder-select">
+          <option value="both">Blank and existing projects</option>
+          <option value="blank">Blank folders only</option>
+          <option value="existing">Existing projects only</option>
+        </select>
+
+        <div class="builder-actions">
+          <button id="builderScan" class="btn-settings" type="button">Scan</button>
+          <button id="builderCreateSession" class="btn-settings" type="button">Create Session</button>
+          <button id="builderStart" class="btn-generate" type="button">
+            <div class="btn-generate-content"><span>Start Build</span></div>
+            <div class="btn-generate-loading"><div class="spinner"></div><span>Running...</span></div>
+          </button>
+        </div>
+
+        <div class="builder-actions secondary">
+          <button id="builderApprove" class="btn-settings" type="button">Continue</button>
+          <button id="builderRetry" class="btn-settings" type="button">Retry Stage</button>
+          <button id="builderCancel" class="btn-secondary" type="button">Stop</button>
+        </div>
+
+        <label class="builder-label" for="builderEnhancement">Enhancement request</label>
+        <textarea id="builderEnhancement" class="builder-textarea small" placeholder="Add enhancement request for the current stage..."></textarea>
+        <button id="builderEnhance" class="btn-settings" type="button">Enhance Current Stage</button>
+      </div>
+    </section>
+
+    <section class="builder-column">
+      <div class="panel-header">
+        <h2 class="panel-title">Stage Timeline</h2>
+      </div>
+      <div class="builder-content">
+        <div id="builderSessionMeta" class="builder-meta">No active session.</div>
+        <div class="builder-progress-shell">
+          <div id="builderProgressBar" class="builder-progress-bar"></div>
+        </div>
+        <div id="builderStrategySummary" class="builder-meta">Strategy preview will appear here.</div>
+        <div class="builder-replay-controls">
+          <button id="builderReplayPrev" class="btn-settings" type="button">Prev</button>
+          <button id="builderReplayPlay" class="btn-settings" type="button">Play</button>
+          <button id="builderReplayNext" class="btn-settings" type="button">Next</button>
+        </div>
+        <input id="builderReplayRange" class="builder-replay-range" type="range" min="0" max="0" value="0">
+        <div id="builderReplayLabel" class="builder-meta">Replay idle.</div>
+        <div id="builderStageList" class="builder-stage-list"></div>
+      </div>
+    </section>
+
+    <section class="builder-column">
+      <div class="panel-header">
+        <h2 class="panel-title">Live Explain + Logs</h2>
+      </div>
+      <div class="builder-content">
+        <div class="builder-section">
+          <h3>Environment</h3>
+          <pre id="builderEnvironmentSummary" class="builder-pre">Run a scan to inspect this machine.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Workspace</h3>
+          <pre id="builderWorkspaceSummary" class="builder-pre">Run a scan to inspect the target folder.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Current Stage Details</h3>
+          <pre id="builderCurrentStageSummary" class="builder-pre">No stage selected yet.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Architecture Map</h3>
+          <div id="builderGraphCanvas" class="builder-graph-canvas"></div>
+        </div>
+        <div class="builder-section">
+          <h3>Graph Node Details</h3>
+          <pre id="builderGraphNodeSummary" class="builder-pre">Select a graph node to inspect it.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Artifacts</h3>
+          <pre id="builderArtifactSummary" class="builder-pre">No artifacts yet.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Next Moves</h3>
+          <pre id="builderNextActionSummary" class="builder-pre">No suggestions yet.</pre>
+        </div>
+        <div class="builder-section">
+          <h3>Live Logs</h3>
+          <pre id="builderLiveLog" class="builder-pre log">No logs yet.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ Main Content ═══ -->
+  <main id="app" style="display:none;">
+
+    <!-- ─── Left Panel: Prompt Area ─── -->
+    <section id="promptPanel" class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg class="panel-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Dynamic Prompt
+        </h2>
+        <button class="btn-icon" id="btnClearPrompt" title="Clear prompt">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+
+      <!-- Config Row -->
+      <div class="config-row">
+        <button class="btn-settings" id="btnSettings" title="Open config folder to add API keys">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+        <div class="config-group">
+          <label>Language</label>
+          <select id="languageSelect">
+            <option value="auto">Auto-Detect</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="csharp">C#</option>
+            <option value="cpp">C++</option>
+            <option value="c">C</option>
+            <option value="go">Go</option>
+            <option value="rust">Rust</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="ruby">Ruby</option>
+            <option value="php">PHP</option>
+            <option value="swift">Swift</option>
+            <option value="kotlin">Kotlin</option>
+            <option value="sql">SQL</option>
+            <option value="bash">Bash</option>
+            <option value="powershell">PowerShell</option>
+          </select>
+        </div>
+        <div class="config-group">
+          <label>Provider</label>
+          <select id="providerSelect">
+            <option value="ollama_local">Ollama Local</option>
+            <option value="ollama_cloud">Ollama Cloud</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic Claude</option>
+          </select>
+        </div>
+        <div class="config-group">
+          <label>Model</label>
+          <select id="modelSelect">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dynamic Prompt Templates -->
+      <div class="prompt-templates" id="promptTemplates">
+        <div class="template-label">Quick Prompts</div>
+        <div class="template-chips">
+          <button class="chip" data-prompt="Create a function that">Create function</button>
+          <button class="chip" data-prompt="Build a class that">Build class</button>
+          <button class="chip" data-prompt="Create a REST API endpoint that">REST API</button>
+          <button class="chip" data-prompt="Write a React component that">React Component</button>
+          <button class="chip" data-prompt="Create a database schema for">DB Schema</button>
+          <button class="chip" data-prompt="Write unit tests for">Unit Tests</button>
+          <button class="chip" data-prompt="Add error handling to">Error Handling</button>
+          <button class="chip" data-prompt="Optimize this code to">Optimize</button>
+          <button class="chip" data-prompt="Create a CLI tool that">CLI Tool</button>
+          <button class="chip" data-prompt="Build a WebSocket server that">WebSocket</button>
+        </div>
+      </div>
+
+      <!-- Prompt Input -->
+      <div class="prompt-input-container">
+        <div class="prompt-input-wrapper">
+          <textarea
+            id="promptInput"
+            placeholder="Describe what you want to build in plain English...&#10;&#10;Examples:&#10;  &quot;Create a screen capture module with real-time FPS tracking&quot;&#10;  &quot;Build a targeting reticle that sits in the center of the screen&quot;&#10;  &quot;Make a WebSocket chat server with rooms and authentication&quot;"
+            spellcheck="false"
+          ></textarea>
+          <div class="prompt-suggestions" id="promptSuggestions"></div>
+        </div>
+
+        <!-- Context: paste existing code to modify -->
+        <details class="context-section" id="contextSection">
+          <summary>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            Code Context <span class="context-badge" id="contextBadge">empty</span>
+          </summary>
+          <textarea
+            id="contextInput"
+            placeholder="Paste existing code here to modify or extend it..."
+            spellcheck="false"
+          ></textarea>
+        </details>
+      </div>
+
+      <!-- Generate Button -->
+      <div class="generate-bar">
+        <button class="btn-generate" id="btnGenerate">
+          <div class="btn-generate-content">
+            <svg class="generate-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Generate Code</span>
+          </div>
+          <div class="btn-generate-loading">
+            <div class="spinner"></div>
+            <span>Generating...</span>
+          </div>
+          <span class="keybind">Ctrl+Enter</span>
+        </button>
+        <button class="btn-secondary" id="btnStop" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+          Stop
+        </button>
+      </div>
+
+      <!-- Prompt History -->
+      <div class="prompt-history" id="promptHistory">
+        <div class="history-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Recent Prompts
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+
+    <!-- ─── Resizer ─── -->
+    <div class="panel-resizer" id="panelResizer"></div>
+
+    <!-- ─── Right Panel: Code Output ─── -->
+    <section id="codePanel" class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg class="panel-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Generated Code
+          <span class="code-lang-badge" id="codeLangBadge"></span>
+        </h2>
+        <div class="panel-actions">
+          <button class="btn-icon" id="btnCopy" title="Copy code">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span class="btn-label">Copy</span>
+          </button>
+          <button class="btn-icon" id="btnSave" title="Save file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span class="btn-label">Save</span>
+          </button>
+          <button class="btn-icon" id="btnClearCode" title="Clear code">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span class="btn-label">Clear</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Code Display -->
+      <div class="code-container" id="codeContainer">
+        <div class="code-placeholder" id="codePlaceholder">
+          <div class="placeholder-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <p class="placeholder-text">Your generated code will appear here</p>
+          <p class="placeholder-hint">Type a prompt and hit <kbd>Ctrl</kbd> + <kbd>Enter</kbd></p>
+        </div>
+        <div class="code-output" id="codeOutput" style="display:none;">
+          <div class="line-numbers" id="lineNumbers"></div>
+          <pre><code id="codeContent" class="hljs"></code></pre>
+        </div>
+        <div class="code-cursor" id="codeCursor"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ Status Bar ═══ -->
+  <footer id="statusBar">
+    <div class="status-left">
+      <span class="status-item" id="statusProvider">
+        <span class="status-dot-small"></span>
+        <span id="statusProviderText">Ollama Local</span>
+      </span>
+      <span class="status-item" id="statusModel">
+        <span id="statusModelText">--</span>
+      </span>
+    </div>
+    <div class="status-right">
+      <span class="status-item" id="statusTokens"></span>
+      <span class="status-item" id="statusTime"></span>
+      <span class="status-item version">AgentPrime Mini · v1.0.0</span>
+    </div>
+  </footer>
+
+  <!-- ═══ Settings Modal ═══ -->
+  <div class="modal-overlay" id="settingsOverlay" style="display:none;">
+    <div class="modal" id="settingsModal">
+      <div class="modal-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </h3>
+        <button class="btn-icon modal-close" id="btnCloseSettings" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h4>API Keys</h4>
+          <p class="settings-hint">Keys are kept out of the renderer and can be stored in the local app secrets file.</p>
+
+          <div class="settings-field">
+            <label for="keyOllamaCloud">Ollama Cloud</label>
+            <div class="key-input-row">
+              <input type="password" id="keyOllamaCloud" placeholder="Enter Ollama Cloud API key..." autocomplete="off" spellcheck="false">
+              <button class="btn-toggle-vis" data-target="keyOllamaCloud" title="Show/hide">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="key-status" id="statusKeyOllamaCloud"></span>
+          </div>
+
+          <div class="settings-field">
+            <label for="keyOpenAI">OpenAI</label>
+            <div class="key-input-row">
+              <input type="password" id="keyOpenAI" placeholder="Enter OpenAI API key..." autocomplete="off" spellcheck="false">
+              <button class="btn-toggle-vis" data-target="keyOpenAI" title="Show/hide">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="key-status" id="statusKeyOpenAI"></span>
+          </div>
+
+          <div class="settings-field">
+            <label for="keyAnthropic">Anthropic</label>
+            <div class="key-input-row">
+              <input type="password" id="keyAnthropic" placeholder="Enter Anthropic API key..." autocomplete="off" spellcheck="false">
+              <button class="btn-toggle-vis" data-target="keyAnthropic" title="Show/hide">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="key-status" id="statusKeyAnthropic"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelSettings">Cancel</button>
+        <button class="btn-generate" id="btnSaveSettings">
+          <div class="btn-generate-content">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Keys</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Toast Notification ═══ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="./js/dynamic-prompts.js"></script>
+  <script src="./js/renderer.js"></script>
+  <script src="./js/builder-visuals.js"></script>
+  <script src="./js/builder-ui.js"></script>
+</body>
+</html>
